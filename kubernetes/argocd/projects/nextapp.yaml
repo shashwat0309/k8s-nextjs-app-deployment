@@ -1,0 +1,72 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: nextjsapp
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  description: Next Js project
+  destinations:
+  - namespace: '*'
+    server: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  sourceRepos:
+  - '*'
+status: {}
+ 
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: nextjsapp
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      files:
+      - path:  argocd/apps/**/config.yaml
+      repoURL:  https://github.com/shashwat0309/test-devops-test.git
+      requeueAfterSeconds: 20
+      revision: "main"
+  syncPolicy: {}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: argocd-autopilot
+        app.kubernetes.io/name: '{{ appName }}'
+      name: test-{{ appName }}
+      namespace: argocd
+    spec:
+      destination:
+        namespace: '{{ destNamespace }}'
+        server: '{{ destServer }}'
+      ignoreDifferences:
+      - group: argoproj.io
+        jsonPointers:
+        - /status
+        kind: Application
+      project: nextjsapp
+      source:
+        path: '{{ srcPath }}'
+        repoURL: '{{ srcRepoURL }}'
+        targetRevision: '{{ srcTargetRevision }}'
+        helm:
+          values: | 
+            {{ appValues }}
+      syncPolicy:
+        automated:
+          allowEmpty: true
+          prune: false
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+        retry:
+          limit: 3
+          backoff:
+            duration: 30s
+            factor: 5
+            maxDuration: 5m

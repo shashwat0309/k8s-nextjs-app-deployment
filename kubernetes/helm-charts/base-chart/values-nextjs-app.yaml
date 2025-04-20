@@ -1,0 +1,161 @@
+# Application name and namespace
+nameOverride: nextjs-production
+namespace: production-apps
+
+service:
+  # Service configuration
+  port: 80
+  containerPort: 3000
+
+image:
+  # Docker Hub image details
+  repository: dockerhub-blueriver/nextjs
+  tag: v1.0.0
+  # Setting pull policy to Always ensures latest image is used on redeploys with same tag
+  pullPolicy: Always
+
+env:
+  # Enable environment variables
+  enabled: true
+  # Application configuration
+  configs:
+    NODE_ENV: production
+    # Cache configuration for optimized performance
+    NEXT_TELEMETRY_DISABLED: 1
+
+  # Secret environment variables
+  secrets:
+    secretStore: kubernetes
+    data:
+      - name: nextjs-app-secrets
+        keys:
+          - name: DATABASE_URL
+          - name: JWT_SECRET
+          - name: REDIS_URL
+          # Add other secrets as needed
+
+# High availability configuration
+replicas: 3
+
+resources:
+  # Production-grade resource allocation
+  requests:
+    memory: 512Mi
+    cpu: 250m
+  limits:
+    memory: 1Gi
+    cpu: 1000m
+
+# Health check configuration
+probes:
+  livenessPath: /api/health
+  readinessPath: /api/ready
+  liveness:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# Volume configuration for persistent data
+volumes:
+  path: /app/data
+  storage: 5Gi
+  storageClassName: standard-rwo-retain
+
+# For file uploads or other static content
+extraVolumes:
+  - path: /app/public/uploads
+    storage: 10Gi
+    storageClassName: standard-rwo-retain
+
+# Node affinity to ensure pods are distributed across nodes
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: cloud.google.com/gke-nodepool  # Adjust for your cloud provider
+              operator: In
+              values:
+                - application-pool
+
+# Autoscaling for handling traffic spikes
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Ingress configuration for external access
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"  # For larger file uploads
+  tls:
+    enabled: true
+  hosts:
+    - host: www.nextjsapp.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Pod Disruption Budget for availability during cluster maintenance
+pdb:
+  enabled: true
+  minAvailable: 2
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# Network policies
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+
+# Monitoring and logging configuration
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    metricRelabelings: []
+
+# Deployment strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 1
+
+# Pod anti-affinity to spread across nodes
+podAntiAffinity:
+  enabled: true
+  type: preferred  # or required
+
+# Init containers if needed for setup tasks
+initContainers:
+  enabled: false
+  containers: []
+    # - name: migration
+    #   image: dockerhub-username/nextjs-app:v1.0.0
+    #   command: ["npm", "run", "migration"]

@@ -1,0 +1,9 @@
+appName: "external-secrets-operator"
+destNamespace: "external-secrets"
+destServer: "https://kubernetes.default.svc"
+srcPath: "infra/helm-charts/external-secrets-operator"
+srcRepoURL: "https://github.com/shashwat0309/test-devops-test.git"
+srcTargetRevision: "main"
+helm:
+  valueFiles:
+    - values-staging.yaml

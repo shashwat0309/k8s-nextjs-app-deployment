@@ -1,0 +1,36 @@
+# Ignore the Go local dependencies
+vendor/
+
+# Ignore build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.out
+
+# Ignore binaries and other build artifacts from `go build`
+bin/
+build/
+dist/
+*.test
+*.o
+
+# Ignore any temporary or system files
+*.log
+*.tmp
+*.swp
+*.swo
+*.DS_Store
+.idea/
+.vscode/
+*.env
+
+# Ignore Go modules cache
+go.sum
+go.mod
+
+# Ignore git
+.git
+.gitignore
+

@@ -1,0 +1,73 @@
+name: Terragrunt Apply
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_matrix:
+    name: Build Matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Get all directories in aws/envs folder
+        uses: sergeysova/jq-action@v2
+        id: find
+        with:
+          cmd: |
+            find aws/envs -type d -maxdepth 3 -mindepth 3 | \
+            sed 's|^aws\/envs\/||' |  \
+            jq -R -s -c 'split("\n")[:-1]'
+      - id: set-matrix
+        run: echo 'matrix=${{ steps.find.outputs.value }}' >> $GITHUB_OUTPUT
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+  apply:
+    runs-on: ubuntu-latest
+    needs: build_matrix
+    permissions:
+      contents: "read"
+      id-token: "write"
+    strategy:
+      matrix:
+        env: ${{ fromJson(needs.build_matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform v1.6.5
+        uses: hashicorp/setup-Terraform@v3
+        with:
+          terraform_version: 1.6.5
+          terraform_wrapper: false
+          
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{secrets.SSH_PRIVATE_KEY}}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Setup Terragrunt v0.45.2 & tools
+        run: |
+          sudo wget -q -O /bin/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v0.45.2/terragrunt_linux_amd64"
+          sudo chmod +x /bin/terragrunt
+          terragrunt -v
+          ## To enable later, when less issues
+          # curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          # curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::403372804574:role/infra-deployer
+          role-session-name: github-actions-role-session
+          aws-region: eu-central-1
+
+      - name: Apply plan
+        run: |-
+          cd aws/envs/${{ matrix.env }}
+          terragrunt run-all apply --terragrunt-non-interactive --terragrunt-log-level=error

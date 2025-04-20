@@ -1,0 +1,100 @@
+# Overrides the default name for the deployment and related resources
+nameOverride: next-app
+# Kubernetes namespace where resources will be created
+namespace: next-app
+
+service:
+  # The port on which the service will be exposed
+  port: 80
+  # The port on which the container is listening
+  containerPort: 3000
+
+image:
+  # Docker image repository location
+  repository: <ecr-repo>
+  # Tag/version of the image to deploy
+  tag: <image-tag>
+
+env:
+  # Whether to enable environment variables for the deployment
+  enabled: false
+  # Application configuration environment variables
+  configs: {}
+  # Example configuration values (commented out)
+  #   PGHOST: host-name
+  #   PGDATABASE: database-name
+  #   PGUSER: user
+  # Secret environment variables
+  secrets: {}
+  # Example secret configuration (commented out)
+  #   secretStore: gcp-secret-store
+  #   key: gcp-key_es
+  #   data:
+  #     - name: secret-name
+  #       property: password
+
+# Number of pod replicas to run
+replicas: 1
+resources:
+  # Minimum resources each pod should request
+  requests:
+    memory: 250Mi
+    cpu: 200m
+  # Maximum resources each pod can use
+  limits:
+    memory: 500Mi
+    cpu: 500m
+
+# Health check configuration
+probes: {}
+# Example probe configuration (commented out)
+# livenessPath: /internal/alive     # Path for liveness probe
+# readinessPath: /internal/ready    # Path for readiness probe
+# liveness:
+#   initialDelaySeconds: 3          # Delay before first liveness check
+#   periodSeconds: 3                # How often to check liveness
+# readiness:
+#   initialDelaySeconds: 5          # Delay before first readiness check
+#   periodSeconds: 5                # How often to check readiness
+
+# Primary volume configuration (for persistent storage)
+volumes: {}
+# Example volume configuration (commented out)
+#   path: /usr/src/app/data         # Mount path in container
+#   storage: 1Gi                    # Size of the volume
+#   storageClassName: standard-rwo-retain  # Storage class type
+
+# Additional volumes configuration
+extraVolumes: {}
+# Example additional volume configuration (commented out)
+#   - path: /usr/src/app/public/uploads
+#     storage: 1Gi
+#     storageClassName: standard-rwo-retain
+
+# Pod placement configuration
+affinity: {}
+# Example node affinity configuration (commented out)
+#   key: pool
+#   value: b
+
+# Horizontal Pod Autoscaler configuration
+autoscaling:
+  # Example autoscaling configuration (commented out)
+  # minReplicas: 1                  # Minimum number of pods
+  # maxReplicas: 6                  # Maximum number of pods
+  # targetCPUUtilizationPercentage: 70  # CPU threshold for scaling
+
+# Ingress configuration for external access
+ingress:
+  enabled: false
+  # Example TLS and host configuration (commented out)
+  # tls:
+  #   enabled: false
+  # host: "example.xyz"            # Domain name for the ingress
+
+# Pod Disruption Budget configuration
+pdb:
+  # Whether to enable PDB for availability during disruptions
+  enabled: true
+  # Minimum number of pods that must be available during disruptions
+  minAvailable: 1

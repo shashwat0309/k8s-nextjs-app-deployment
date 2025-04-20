@@ -1,0 +1,39 @@
+{{- if not .Values.statefulset }}
+{{- if .Values.volumes }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "app.name" . }}-pvc
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.volumes.storageClassName }}
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.volumes.storage }}
+{{- end }}
+{{- if .Values.extraVolumes }}
+{{- range $index, $volume := .Values.extraVolumes }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "app.name" $ }}-pvc-{{ add $index 1 }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    {{- include "app.labels" $ | nindent 4 }}
+spec:
+  storageClassName: {{ $volume.storageClassName }}
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ $volume.storage }}
+{{- end }}
+{{- end }}
+{{- end }}

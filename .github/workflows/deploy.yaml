@@ -1,0 +1,54 @@
+name: Build and Push Docker Image to ECR
+
+# on:
+#   push:
+#     branches:
+#       - master  
+on: 
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials for ECR Access
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build and Push Docker image
+      run: |
+        IMAGE_TAG=${{ github.sha }}
+        cd app/ && docker build -t ${{ secrets.ECR_REPOSITORY_URI }}:$IMAGE_TAG .
+        
+        echo "Pushing image to dockerhub..."
+        docker push ${{ secrets.ECR_REPOSITORY_URI }}:$IMAGE_TAG
+
+
+    - name: Update Argo CD values.yaml with new image tag
+      run: |
+        IMAGE_TAG=${{ github.sha }}
+        yq -i '.appValues |= sub("tag:.*", "tag: " + strenv(IMAGE_TAG))' infra/argocd/apps/app-go/config.yaml
+
+    - name: Commit and push the updated values.yaml
+      run: |
+        git config --local user.name "github-actions[bot]"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
+        git commit -m "Update image tag to $IMAGE_TAG"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

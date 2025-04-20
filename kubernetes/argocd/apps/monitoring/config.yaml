@@ -1,0 +1,69 @@
+appName: "monitoring"
+destNamespace: "monitoring"
+destServer: "https://kubernetes.default.svc" #cluster 
+srcPath: "infra/helm-charts/monitoring-stack" #juno-node charts
+srcRepoURL: "https://github.com/shashwat0309/test-devops-test.git"
+srcTargetRevision: "main" #version
+appValues: |
+  prometheus:
+    prometheusSpec:
+      retention: 30d
+      scrapeInterval: "60s"
+
+      ruleSelectorNilUsesHelmValues: false
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      probeSelectorNilUsesHelmValues: false
+      additionalScrapeConfigs:
+        - job_name: prod-juno
+          scrape_interval: 60s
+          metrics_path: /
+          scheme: http
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrapenode]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: "standard"
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 150Gi
+
+    
+
+  grafana:
+    grafana.ini:  
+      database:
+        type: "postgres"
+        host: "<POSTGRESQL_HOST>:5432"  # Replace with your PostgreSQL hostname and port
+        name: "grafana"                 # Database name
+        user: "<POSTGRESQL_USER>"       # Replace with your PostgreSQL username
+        password: "<POSTGRESQL_PASSWORD>"  # Replace with your PostgreSQL password
+        sslMode: "disable"
+
+
+
+

@@ -1,0 +1,9 @@
+appName: "cert-manager"
+destNamespace: "cert-manager"
+destServer: "https://kubernetes.default.svc"
+srcPath: "infra/helm-charts/cert-manager"
+srcRepoURL: "https://github.com/shashwat0309/test-devops-test.git"
+srcTargetRevision: "main"
+helm:
+  valueFiles:
+    - values-staging.yaml

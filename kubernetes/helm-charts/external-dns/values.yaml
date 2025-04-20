@@ -1,0 +1,22 @@
+external-dns:
+  serviceMonitor:
+    enabled: true
+  env:
+    - name: CF_API_TOKEN
+      value: <CF_API_TOKEN_VALUE>
+  sources:
+    - service
+    - ingress
+  policy: sync
+  # Specifies the registry for storing ownership and labels.
+  # Valid values are "aws-sd", "noop", "dynamodb", and "txt".
+  registry: txt
+  # When using a registry other than "noop", specifies a name that
+  # uniquely identifies this instance of external-dns.
+  txtOwnerId: "shashwat0309"
+  domainFilters:
+    - nextapp.com
+  provider: cloudflare
+  extraArgs:
+    - "--cloudflare-proxied"
+    - "--cloudflare-dns-records-per-page=5000"

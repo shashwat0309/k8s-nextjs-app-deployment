@@ -1,0 +1,16 @@
+cert-manager:
+  fullnameOverride: cert-manager
+  installCRDs: true
+
+  prometheus:
+    servicemonitor:
+      enabled: true
+
+  extraArgs:
+    - --logging-format=json
+  webhook:
+    extraArgs:
+      - --logging-format=json
+  cainjector:
+    extraArgs:
+      - --logging-format=json

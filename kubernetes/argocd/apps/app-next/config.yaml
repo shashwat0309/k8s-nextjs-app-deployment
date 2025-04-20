@@ -1,0 +1,29 @@
+appName: "nextjs-app"
+destNamespace: "next-app"
+destServer: "https://kubernetes.default.svc" #cluster 
+srcPath: "infra/helm-charts/base-chart" #Next JS app charts
+srcRepoURL: "https://github.com/shashwat0309/sample-devops-test.git"
+srcTargetRevision: "master" #version
+appValues: |
+  ### Basic
+  nameOverride: sample-name
+  namespace: sample-namespace
+
+  image:
+    repository: <ecr-repo>
+    tag: <image-tag>
+    
+  resources:
+    requests:
+      memory: 250Mi
+      cpu: 200m
+    limits:
+      memory: 500Mi
+      cpu: 500m
+
+  ingress:
+    enabled: false
+
+
+
+

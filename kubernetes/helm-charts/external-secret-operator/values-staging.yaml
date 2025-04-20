@@ -1,0 +1,25 @@
+secretStore:
+  # AWS equivalent might use a region or account ID
+  region: us-east-1  # Replace with your AWS region
+  accountId: "123456789012"  # Replace with your AWS account ID
+
+external-secrets:
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  certController:
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+  webhook:
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+  serviceAccount:
+    name: external-secret
+    annotations:
+      # AWS IAM role annotation for service account (IRSA)
+      eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/external-secrets-role"
