@@ -125,5 +125,13 @@ This repository contains Kubernetes configurations designed for **high availabil
 
 ## TODO / Future Improvements
 - Support to add user groups/roles RBAC in auth configmap (for easier onboarding of members to EKS)
-- Integrate WAF 
 - Event-Driven Autoscaling with KEDA
+- Implement mutual TLS (mTLS) with service mesh like Istio or Linkerd
+- Create disaster recovery plan with cross-region replication strategies
+- Implement cost optimization tagging and resource utilization analysis
+- Set up canary deployment capabilities for safer releases
+- Implement security scanning pipeline for containers and infrastructure as code
+- Create automated backup and restore procedures for stateful applications
+- Develop multi-cluster management strategy for production and non-production environments
+- Implement network policy enforcement for pod-to-pod communication
+- Create automated compliance and security posture reporting
