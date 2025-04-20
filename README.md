@@ -74,8 +74,8 @@ Please refer to this [README.md](docs/initial-setup.md) for details related to i
 ### NextJS app deployment on Minikube
 
 <div style="display: flex; justify-content: center; gap: 20px;">
-  <img src="./docs/assests/app_running.png" alt="App Running" width="300"/>
-  <img src="./docs/assests/k8sallresources.png" alt="App Running" width="300"/>
+  <img src="./docs/assests/app_running.png" alt="App Running" width="350"/>
+  <img src="./docs/assests/k8sallresources.png" alt="App Running" width="350"/>
 </div>
 
 
