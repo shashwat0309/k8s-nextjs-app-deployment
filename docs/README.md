@@ -32,6 +32,8 @@
 - ECR
 - EKS (Carpenter Setup)
 - IAM
+- S3
+- IAM OIDC
 
 
 1. Navigate to the relevant folderd for each services, e.g., `infra/terragrunt/aws/test/us-east-1/vpc`.
